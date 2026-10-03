@@ -2,6 +2,7 @@
 import type { GetStaticPaths } from 'astro';
 import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Gallery from '../../components/Gallery.astro';
 import { services, serviceHref, galleryFor, routes, type Service } from '../../data/site';
 
 export const getStaticPaths = (() =>
@@ -56,20 +57,7 @@ const gallery = galleryFor(service.slug);
       </div>
 
       <h2>Gallery</h2>
-      <ul role="list" class="gallery">
-        {
-          gallery.map((img, i) => (
-            <li class="shot">
-              <Image
-                src={img}
-                alt={`${service.title} project photo ${i + 1} of ${gallery.length}`}
-                widths={[320, 480, 640, 900]}
-                sizes="(min-width: 1400px) 320px, (min-width: 1240px) 25vw, (min-width: 920px) 33vw, (min-width: 600px) 50vw, 100vw"
-              />
-            </li>
-          ))
-        }
-      </ul>
+      <Gallery images={gallery} label={service.title} />
     </div>
   </section>
 </BaseLayout>
@@ -171,24 +159,5 @@ const gallery = galleryFor(service.slug);
     margin: clamp(64px, 8vw, 110px) 0 28px;
     font-size: clamp(30px, 3.5vw, 48px);
     letter-spacing: var(--tracking-heading);
-  }
-
-  .gallery {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
-    gap: 16px;
-  }
-
-  .shot {
-    aspect-ratio: 4 / 5;
-    border-radius: 22px;
-    overflow: hidden;
-    background: var(--color-placeholder);
-  }
-
-  .shot img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
   }
 </style>

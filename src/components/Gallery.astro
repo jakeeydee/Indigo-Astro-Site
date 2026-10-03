@@ -1,0 +1,354 @@
+---
+/*
+  Service gallery grid with a full-screen viewer.
+  Each thumbnail links to the full-size photo, so it still works without JavaScript.
+  With JavaScript, clicks open a <dialog> viewer with prev/next, arrow keys, swipe and a counter.
+*/
+import type { ImageMetadata } from 'astro';
+import { Image, getImage } from 'astro:assets';
+
+interface Props {
+  images: ImageMetadata[];
+  /** Used for alt text, e.g. "Curtains and Blinds". */
+  label: string;
+}
+
+const { images, label } = Astro.props;
+
+const photos = await Promise.all(
+  images.map(async (src, i) => {
+    const full = await getImage({ src, widths: [800, 1200, 1600], format: 'webp' });
+    return {
+      src,
+      alt: `${label} project photo ${i + 1} of ${images.length}`,
+      fullSrc: full.src,
+      fullSrcset: full.srcSet.attribute,
+    };
+  }),
+);
+---
+
+<div class="gallery-root" data-gallery>
+  <ul role="list" class="gallery">
+    {
+      photos.map((p, i) => (
+        <li class="shot">
+          <a
+            href={p.fullSrc}
+            data-index={i}
+            data-full={p.fullSrc}
+            data-srcset={p.fullSrcset}
+            data-alt={p.alt}
+            aria-label={`Open ${p.alt}`}
+          >
+            <Image
+              src={p.src}
+              alt={p.alt}
+              widths={[320, 480, 640, 900]}
+              sizes="(min-width: 1400px) 320px, (min-width: 1240px) 25vw, (min-width: 920px) 33vw, (min-width: 600px) 50vw, 100vw"
+            />
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+
+  <dialog class="viewer" aria-label={`${label} gallery`} data-viewer>
+    <div class="viewer__top">
+      <p class="viewer__count" aria-live="polite" data-count></p>
+      <button class="viewer__btn" type="button" aria-label="Close gallery" data-close>
+        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+          <path d="M3 3l12 12M15 3 3 15" stroke="currentColor" stroke-width="1.6" fill="none"></path>
+        </svg>
+      </button>
+    </div>
+
+    <div class="viewer__stage" data-stage>
+      <img class="viewer__img" alt="" sizes="100vw" data-img />
+    </div>
+
+    <div class="viewer__nav">
+      <button class="viewer__btn" type="button" aria-label="Previous photo" data-prev>←</button>
+      <button class="viewer__btn" type="button" aria-label="Next photo" data-next>→</button>
+    </div>
+  </dialog>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-gallery]').forEach((root) => {
+    const links = [...root.querySelectorAll<HTMLAnchorElement>('a[data-index]')];
+    const dialog = root.querySelector<HTMLDialogElement>('[data-viewer]')!;
+    const img = dialog.querySelector<HTMLImageElement>('[data-img]')!;
+    const stage = dialog.querySelector<HTMLElement>('[data-stage]')!;
+    const count = dialog.querySelector<HTMLElement>('[data-count]')!;
+    const total = links.length;
+    let current = 0;
+    let opener: HTMLElement | null = null;
+
+    const wrap = (i: number) => (i + total) % total;
+
+    const preload = (i: number) => {
+      const a = links[wrap(i)];
+      const pre = new Image();
+      pre.sizes = '100vw';
+      pre.srcset = a.dataset.srcset ?? '';
+      pre.src = a.dataset.full ?? a.href;
+    };
+
+    const show = (i: number) => {
+      current = wrap(i);
+      const a = links[current];
+      img.classList.add('is-loading');
+      img.onload = () => img.classList.remove('is-loading');
+      img.srcset = a.dataset.srcset ?? '';
+      img.src = a.dataset.full ?? a.href;
+      img.alt = a.dataset.alt ?? '';
+      if (img.complete) img.classList.remove('is-loading');
+      count.textContent = `${current + 1} / ${total}`;
+      preload(current + 1);
+      preload(current - 1);
+    };
+
+    links.forEach((a, i) => {
+      a.addEventListener('click', (e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return; // let "open in new tab" work
+        e.preventDefault();
+        opener = a;
+        show(i);
+        dialog.showModal();
+      });
+    });
+
+    dialog.querySelector('[data-prev]')!.addEventListener('click', () => show(current - 1));
+    dialog.querySelector('[data-next]')!.addEventListener('click', () => show(current + 1));
+    dialog.querySelector('[data-close]')!.addEventListener('click', () => dialog.close());
+
+    dialog.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') show(current - 1);
+      else if (e.key === 'ArrowRight') show(current + 1);
+      else if (e.key === 'Home') show(0);
+      else if (e.key === 'End') show(total - 1);
+      else return;
+      e.preventDefault();
+    });
+
+    // Clicking the dark backdrop (but not the photo or the buttons) closes the viewer
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog || e.target === stage) dialog.close();
+    });
+
+    // Return focus to the thumbnail that opened the viewer
+    dialog.addEventListener('close', () => {
+      opener?.focus();
+      // Drop the large image so it doesn't flash the previous photo next time
+      img.removeAttribute('src');
+      img.removeAttribute('srcset');
+    });
+
+    // Horizontal swipe on touch screens
+    let startX = 0;
+    let startY = 0;
+    stage.addEventListener('pointerdown', (e) => {
+      startX = e.clientX;
+      startY = e.clientY;
+    });
+    stage.addEventListener('pointerup', (e) => {
+      if (e.pointerType === 'mouse') return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) show(current + (dx < 0 ? 1 : -1));
+    });
+  });
+</script>
+
+<style>
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+    gap: 16px;
+  }
+
+  .shot {
+    aspect-ratio: 4 / 5;
+    border-radius: 22px;
+    overflow: hidden;
+    background: var(--color-placeholder);
+  }
+
+  .shot a {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    cursor: zoom-in;
+  }
+
+  .shot a:focus-visible {
+    outline-offset: -4px;
+  }
+
+  .shot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--dur-zoom) var(--ease-media);
+  }
+
+  .shot a:hover img {
+    transform: scale(1.04);
+  }
+
+  /* Viewer */
+  :global(html:has(dialog[open])) {
+    overflow: hidden;
+  }
+
+  .viewer {
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    margin: 0;
+    padding: clamp(12px, 2vw, 24px);
+    border: 0;
+    background: rgb(10 22 20 / 0.94);
+    color: var(--color-white);
+    overflow: hidden;
+  }
+
+  .viewer[open] {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 12px;
+  }
+
+  .viewer::backdrop {
+    background: transparent;
+  }
+
+  .viewer__top,
+  .viewer__nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .viewer__nav {
+    justify-content: center;
+  }
+
+  .viewer__count {
+    font-size: 15px;
+    font-weight: var(--weight-semibold);
+    letter-spacing: 0.04em;
+    padding-left: 8px;
+  }
+
+  .viewer__btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 1px solid rgb(255 255 255 / 0.4);
+    background: transparent;
+    color: var(--color-white);
+    display: grid;
+    place-items: center;
+    font-size: 16px;
+    transition: background-color var(--dur-base);
+  }
+
+  .viewer__btn:hover {
+    background: rgb(255 255 255 / 0.12);
+  }
+
+  .viewer__btn:focus-visible {
+    outline-color: var(--color-white);
+  }
+
+  .viewer__stage {
+    display: grid;
+    place-items: center;
+    min-height: 0;
+    touch-action: pan-y;
+  }
+
+  /* Height left for the photo once the counter, buttons, gaps and padding are taken out */
+  .viewer {
+    --chrome: calc(48px + 48px + 2 * 12px + 2 * clamp(12px, 2vw, 24px));
+  }
+
+  .viewer__img {
+    max-width: 100%;
+    max-height: calc(100dvh - var(--chrome));
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 16px;
+    transition: opacity 0.3s ease;
+  }
+
+  .viewer__img.is-loading {
+    opacity: 0;
+  }
+
+  /* Wide screens: arrows sit either side of the photo */
+  @media (min-width: 900px) {
+    .viewer[open] {
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+
+    .viewer {
+      --chrome: calc(48px + 12px + 2 * clamp(12px, 2vw, 24px));
+    }
+
+    .viewer__top {
+      grid-column: 1 / -1;
+    }
+
+    .viewer__stage {
+      grid-column: 2;
+      grid-row: 2;
+    }
+
+    .viewer__nav {
+      display: contents;
+    }
+
+    .viewer__nav [data-prev] {
+      grid-column: 1;
+      grid-row: 2;
+      align-self: center;
+    }
+
+    .viewer__nav [data-next] {
+      grid-column: 3;
+      grid-row: 2;
+      align-self: center;
+    }
+  }
+
+  /* Open animation (browsers with @starting-style); reduced motion is handled globally */
+  .viewer[open] {
+    opacity: 1;
+    transition:
+      opacity 0.3s ease,
+      overlay 0.3s allow-discrete,
+      display 0.3s allow-discrete;
+  }
+
+  .viewer[open] .viewer__stage {
+    transform: none;
+    transition: transform 0.5s var(--ease-out);
+  }
+
+  @starting-style {
+    .viewer[open] {
+      opacity: 0;
+    }
+
+    .viewer[open] .viewer__stage {
+      transform: scale(0.96);
+    }
+  }
+</style>
