@@ -1,0 +1,57 @@
+/*
+  Indigo Interiors design tokens.
+  Values come from the Claude Design handoff (Indigo Interiors.dc.html).
+*/
+:root {
+  /* Brand */
+  --color-teal: #058479;
+  --color-teal-deep: #034a44; /* hover state for teal surfaces and links */
+  --color-teal-tint: rgb(5 132 121 / 0.08); /* active nav pill */
+
+  /* Surfaces */
+  --color-cream: #f5f3ee; /* page background */
+  --color-cream-hover: #eaf3f1;
+  --color-stone: #f0eee8; /* menu row hover */
+  --color-placeholder: #e6e3dc;
+  --color-white: #ffffff;
+
+  /* Text */
+  --color-ink: #14201e;
+  --color-ink-soft: #3c4a47; /* long-form body copy */
+  --color-muted: #5a6865; /* supporting text */
+
+  --line: rgb(20 32 30 / 0.12);
+  --line-strong: rgb(20 32 30 / 0.2);
+  --line-on-teal: rgb(255 255 255 / 0.2);
+
+  /* Typography */
+  --font-sans: 'Urbanist', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --weight-thin: 200;
+  --weight-light: 300;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  --tracking-display: -0.035em;
+  --tracking-heading: -0.03em;
+
+  /* Layout */
+  --container-max: 82.5rem; /* 1320px */
+  --page-pad: clamp(16px, 4vw, 48px);
+  --section-gap: clamp(72px, 10vw, 140px);
+  --header-offset: 96px; /* space reserved under the fixed header on non-hero pages */
+
+  /* Shape */
+  --radius-pill: 999px;
+  --radius-card: 28px;
+  --radius-panel: clamp(24px, 3vw, 40px);
+  --radius-media: 20px;
+
+  /* Elevation */
+  --shadow-header: 0 6px 24px rgb(3 74 68 / 0.06);
+  --shadow-menu: 0 20px 50px rgb(3 74 68 / 0.14);
+  --shadow-dropdown: 0 1px 0 rgb(20 32 30 / 0.04), 0 30px 70px -10px rgb(3 74 68 / 0.22);
+  --shadow-card-hover: 0 30px 60px rgb(3 74 68 / 0.12);
+}

@@ -1,0 +1,155 @@
+---
+import { testimonials } from '../../data/site';
+---
+
+<section class="section" aria-labelledby="testimonials-heading">
+  <div class="panel container" data-carousel>
+    <div class="head">
+      <h2 id="testimonials-heading">Kind words</h2>
+      <div class="controls">
+        <button class="ctrl" type="button" aria-label="Previous testimonial" data-dir="-1">←</button>
+        <button class="ctrl" type="button" aria-label="Next testimonial" data-dir="1">→</button>
+      </div>
+    </div>
+
+    <ul role="list" class="track" data-track tabindex="0" aria-label="Testimonials">
+      {
+        testimonials.map((t) => (
+          <li class="slide">
+            <figure>
+              <div class="mark" aria-hidden="true">“</div>
+              <blockquote>{t.quote}</blockquote>
+              <figcaption>
+                <span class="rule" aria-hidden="true"></span>
+                {t.name}
+              </figcaption>
+            </figure>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-carousel]').forEach((root) => {
+    const track = root.querySelector<HTMLElement>('[data-track]')!;
+    root.querySelectorAll<HTMLButtonElement>('[data-dir]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const dir = Number(btn.dataset.dir);
+        track.scrollBy({ left: dir * Math.min(436, track.clientWidth * 0.85) });
+      });
+    });
+  });
+</script>
+
+<style>
+  .panel {
+    background: var(--color-teal);
+    color: var(--color-white);
+    border-radius: var(--radius-panel);
+    padding: clamp(32px, 5vw, 72px) 0 clamp(32px, 5vw, 64px);
+    overflow: hidden;
+    --inset: clamp(24px, 5vw, 72px);
+  }
+
+  .head {
+    padding: 0 var(--inset);
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 36px;
+  }
+
+  h2 {
+    font-size: clamp(36px, 4.5vw, 60px);
+    letter-spacing: var(--tracking-heading);
+    line-height: 1;
+  }
+
+  .controls {
+    display: flex;
+    gap: 8px;
+  }
+
+  .ctrl {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 1px solid rgb(255 255 255 / 0.4);
+    background: transparent;
+    color: var(--color-white);
+    display: grid;
+    place-items: center;
+    font-size: 16px;
+  }
+
+  .ctrl:hover {
+    background: rgb(255 255 255 / 0.12);
+  }
+
+  .track {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding: 0 var(--inset);
+    scroll-padding: 0 var(--inset);
+    scrollbar-width: none;
+  }
+
+  .track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .track:focus-visible {
+    outline: 2px solid var(--color-white);
+    outline-offset: -2px;
+  }
+
+  .slide {
+    flex: 0 0 min(420px, 82%);
+    scroll-snap-align: start;
+    display: flex;
+  }
+
+  figure {
+    flex: 1;
+    background: rgb(255 255 255 / 0.1);
+    border: 1px solid rgb(255 255 255 / 0.16);
+    border-radius: 24px;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 28px;
+  }
+
+  .mark {
+    font-size: 48px;
+    line-height: 0.5;
+    font-weight: var(--weight-semibold);
+    height: 20px;
+  }
+
+  blockquote {
+    font-size: 19px;
+    line-height: 1.5;
+  }
+
+  figcaption {
+    font-weight: var(--weight-semibold);
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .rule {
+    width: 24px;
+    height: 1px;
+    background: var(--color-white);
+  }
+</style>

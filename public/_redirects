@@ -1,0 +1,6 @@
+# Old Wix URLs -> new routes (Cloudflare Pages)
+/blank              /about/                                   301
+/blank-5            /contact/                                 301
+/blank-6            /services/curtains-and-blinds/            301
+/blank-6-1          /services/home-staging-furniture-packs/   301
+/blank-6-1-1        /services/common-parts/                   301

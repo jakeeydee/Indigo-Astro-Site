@@ -1,0 +1,159 @@
+---
+import { Image } from 'astro:assets';
+import lockup from '../assets/brand/logo-house-lockup.png';
+import { site, allPages, socials } from '../data/site';
+---
+
+<footer class="site-footer">
+  <div class="panel">
+    <div class="grid">
+      <Image
+        class="logo"
+        src={lockup}
+        alt="Indigo Interiors - Dressed to let, Dressed to sell"
+        widths={[160, 320]}
+        sizes="160px"
+      />
+
+      <nav class="col" aria-labelledby="footer-pages">
+        <h2 class="col__label" id="footer-pages">Pages</h2>
+        <ul role="list">
+          {allPages.map((p) => <li><a href={p.href}>{p.label}</a></li>)}
+        </ul>
+      </nav>
+
+      <div class="col">
+        <h2 class="col__label">Contact</h2>
+        <a href={site.phone.href}>Tel: {site.phone.display}</a>
+        <a href={`mailto:${site.email}`}>{site.email}</a>
+      </div>
+
+      <div class="top">
+        <a class="top__btn" href="#top" aria-label="Back to top">↑</a>
+      </div>
+    </div>
+
+    <div class="bottom">
+      <ul role="list" class="socials">
+        {
+          socials.map((s) => (
+            <li>
+              <a href={s.href} target="_blank" rel="noopener">
+                {s.label}
+                <span class="visually-hidden"> (opens in a new tab)</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="credit">
+        Designed and developed by <a href={site.credit.href} target="_blank" rel="noopener">{site.credit.name}</a>
+      </p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    padding: var(--section-gap) var(--page-pad) clamp(16px, 2vw, 24px);
+  }
+
+  .panel {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    background: var(--color-teal);
+    color: var(--color-white);
+    border-radius: var(--radius-panel);
+    padding: clamp(32px, 5vw, 64px) clamp(24px, 5vw, 64px) 28px;
+  }
+
+  .site-footer a {
+    color: var(--color-white);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+    gap: 40px;
+    align-items: start;
+  }
+
+  .logo {
+    width: 160px;
+    height: auto;
+  }
+
+  .col {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 17px;
+  }
+
+  .col ul {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .col a:hover {
+    opacity: 0.7;
+  }
+
+  .col__label {
+    font-size: 14px;
+    font-weight: var(--weight-semibold);
+    opacity: 0.7;
+    margin-bottom: 6px;
+  }
+
+  .top {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .top__btn {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 1px solid rgb(255 255 255 / 0.5);
+    font-size: 20px;
+  }
+
+  .top__btn:hover {
+    background: rgb(255 255 255 / 0.14);
+  }
+
+  .bottom {
+    margin-top: clamp(40px, 5vw, 64px);
+    padding-top: 22px;
+    border-top: 1px solid var(--line-on-teal);
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-size: 14px;
+  }
+
+  .socials {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    font-weight: var(--weight-semibold);
+  }
+
+  .socials a:hover {
+    opacity: 0.7;
+  }
+
+  .credit {
+    opacity: 0.8;
+  }
+
+  .credit a {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+</style>

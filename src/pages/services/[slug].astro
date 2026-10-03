@@ -1,0 +1,190 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { services, serviceHref, galleryFor, routes, type Service } from '../../data/site';
+
+export const getStaticPaths = (() =>
+  services.map((service) => ({ params: { slug: service.slug }, props: { service } }))) satisfies GetStaticPaths;
+
+interface Props {
+  service: Service;
+}
+
+const { service } = Astro.props;
+const gallery = galleryFor(service.slug);
+---
+
+<BaseLayout title={service.title} description={service.body[0]}>
+  <section class="service">
+    <div class="container">
+      <nav aria-label="Services">
+        <ul role="list" class="tabs">
+          {
+            services.map((s) => (
+              <li>
+                <a
+                  class="tab"
+                  href={serviceHref(s.slug)}
+                  aria-current={s.slug === service.slug ? 'page' : undefined}
+                >
+                  {s.cardTitle}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      <div class="split">
+        <div class="copy">
+          <h1>{service.title}</h1>
+          <p class="sub">{service.subtitle}</p>
+          {service.body.map((para) => <p class="para">{para}</p>)}
+          <a class="btn btn--ink" href={routes.contact}>Get in touch</a>
+        </div>
+        <div class="feature">
+          <Image
+            src={service.image}
+            alt={service.imageAlt}
+            widths={[480, 720, 960, 1280]}
+            sizes="(min-width: 900px) 50vw, 100vw"
+            loading="eager"
+            fetchpriority="high"
+          />
+        </div>
+      </div>
+
+      <h2>Gallery</h2>
+      <ul role="list" class="gallery">
+        {
+          gallery.map((img, i) => (
+            <li class="shot">
+              <Image
+                src={img}
+                alt={`${service.title} project photo ${i + 1} of ${gallery.length}`}
+                widths={[320, 480, 640, 900]}
+                sizes="(min-width: 1400px) 320px, (min-width: 1240px) 25vw, (min-width: 920px) 33vw, (min-width: 600px) 50vw, 100vw"
+              />
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .service {
+    padding: clamp(32px, 6vw, 80px) var(--page-pad) 0;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: clamp(28px, 4vw, 48px);
+  }
+
+  .tab {
+    display: block;
+    padding: 10px 18px;
+    border-radius: var(--radius-pill);
+    font-size: 15px;
+    font-weight: var(--weight-semibold);
+    color: var(--color-ink);
+    border: 1px solid var(--line-strong);
+  }
+
+  .tab:hover {
+    color: var(--color-ink);
+    border-color: var(--color-ink);
+  }
+
+  .tab[aria-current='page'] {
+    background: var(--color-ink);
+    border-color: var(--color-ink);
+    color: var(--color-white);
+  }
+
+  .split {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+    gap: clamp(28px, 5vw, 72px);
+    align-items: start;
+  }
+
+  .copy {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  h1 {
+    font-size: clamp(44px, 6.5vw, 96px);
+    line-height: 0.95;
+    letter-spacing: var(--tracking-display);
+  }
+
+  .sub {
+    font-size: clamp(20px, 1.8vw, 26px);
+    font-weight: var(--weight-medium);
+    color: var(--color-teal);
+    line-height: 1.3;
+  }
+
+  .para {
+    font-size: 18px;
+    line-height: 1.65;
+    color: var(--color-ink-soft);
+  }
+
+  .btn--ink {
+    align-self: flex-start;
+    margin-top: 8px;
+    background: var(--color-ink);
+    color: var(--color-white);
+  }
+
+  .btn--ink:hover {
+    background: var(--color-teal);
+    color: var(--color-white);
+  }
+
+  .feature {
+    border-radius: 32px;
+    overflow: hidden;
+    aspect-ratio: 1 / 1.05;
+  }
+
+  .feature img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  h2 {
+    margin: clamp(64px, 8vw, 110px) 0 28px;
+    font-size: clamp(30px, 3.5vw, 48px);
+    letter-spacing: var(--tracking-heading);
+  }
+
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+    gap: 16px;
+  }
+
+  .shot {
+    aspect-ratio: 4 / 5;
+    border-radius: 22px;
+    overflow: hidden;
+    background: var(--color-placeholder);
+  }
+
+  .shot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+</style>
