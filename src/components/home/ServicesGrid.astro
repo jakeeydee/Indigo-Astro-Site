@@ -71,10 +71,18 @@ import { services, serviceHref } from '../../data/site';
     border-radius: var(--radius-card);
     padding: 10px 10px 26px;
     color: var(--color-ink);
+    transition:
+      transform var(--dur-slow) var(--ease-media),
+      box-shadow var(--dur-slow);
   }
 
   .card:hover {
     color: var(--color-ink);
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  .card:focus-visible {
     box-shadow: var(--shadow-card-hover);
   }
 
@@ -89,6 +97,11 @@ import { services, serviceHref } from '../../data/site';
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform var(--dur-zoom) var(--ease-media);
+  }
+
+  .card:hover .media img {
+    transform: scale(1.06);
   }
 
   .body {

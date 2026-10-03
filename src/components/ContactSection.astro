@@ -165,6 +165,7 @@ const accessKey = import.meta.env.PUBLIC_WEB3FORMS_KEY ?? '';
     padding: 22px 0;
     border-bottom: 1px solid var(--line);
     color: var(--color-ink);
+    transition: color var(--dur-base);
   }
 
   .row:hover {
@@ -191,6 +192,11 @@ const accessKey = import.meta.env.PUBLIC_WEB3FORMS_KEY ?? '';
   .row__icon {
     color: var(--color-teal);
     font-size: 20px;
+    transition: transform 0.35s var(--ease-out);
+  }
+
+  .row:hover .row__icon {
+    transform: translate(3px, -3px);
   }
 
   .card {
@@ -233,6 +239,7 @@ const accessKey = import.meta.env.PUBLIC_WEB3FORMS_KEY ?? '';
     font-weight: var(--weight-regular);
     color: var(--color-ink);
     outline: none;
+    transition: border-color var(--dur-base);
   }
 
   .field textarea {

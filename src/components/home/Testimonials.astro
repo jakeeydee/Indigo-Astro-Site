@@ -84,6 +84,7 @@ import { testimonials } from '../../data/site';
     display: grid;
     place-items: center;
     font-size: 16px;
+    transition: background-color var(--dur-base);
   }
 
   .ctrl:hover {
@@ -98,6 +99,7 @@ import { testimonials } from '../../data/site';
     padding: 0 var(--inset);
     scroll-padding: 0 var(--inset);
     scrollbar-width: none;
+    scroll-behavior: smooth;
   }
 
   .track::-webkit-scrollbar {

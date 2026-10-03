@@ -81,9 +81,13 @@ const { id, title, thumbnail } = Astro.props;
     display: grid;
     place-items: center;
     font-size: 18px;
+    transition:
+      background-color var(--dur-base),
+      transform 0.35s var(--ease-out);
   }
 
   .play:hover .badge {
     background: var(--color-teal-deep);
+    transform: scale(1.08);
   }
 </style>

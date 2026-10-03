@@ -49,6 +49,14 @@
   --radius-panel: clamp(24px, 3vw, 40px);
   --radius-media: 20px;
 
+  /* Motion (curves and timings from the design file) */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1); /* UI: chevrons, dropdown, arrows */
+  --ease-media: cubic-bezier(0.2, 0.7, 0.2, 1); /* cards and image zooms */
+  --dur-fast: 0.2s;
+  --dur-base: 0.25s;
+  --dur-slow: 0.45s;
+  --dur-zoom: 0.8s;
+
   /* Elevation */
   --shadow-header: 0 6px 24px rgb(3 74 68 / 0.06);
   --shadow-menu: 0 20px 50px rgb(3 74 68 / 0.14);
