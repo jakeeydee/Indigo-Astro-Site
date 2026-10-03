@@ -1,3 +1,0 @@
-git init && git add . && git commit -m "Initial Astro site"
-git remote add origin https://github.com/<your-username>/indigo-interiors-astro.git
-git branch -M main && git push -u origin main
