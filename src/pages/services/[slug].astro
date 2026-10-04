@@ -109,28 +109,47 @@ const serviceOrder = services.map((s) => s.slug);
     animation-duration: 0.35s;
   }
 
-  /* The pill: the group box glides and resizes with an ink background, the labels crossfade without stretching */
+  /*
+    The pill glides to the new tab while its old shape crossfades into the new one.
+    Only transform and opacity animate, so it runs on the compositor and stays smooth
+    while the new page is still loading. (The default group animation also tweens
+    width and height, which runs on the main thread and stutters.)
+  */
   ::view-transition-group(active-tab) {
-    animation-duration: 0.5s;
+    animation-duration: 0.4s;
     animation-timing-function: var(--ease-out);
-    background: var(--color-ink);
-    border-radius: var(--radius-pill);
-    overflow: hidden;
+    width: 0 !important;
+    height: 0 !important;
   }
 
+  /* Both snapshots keep their natural size, anchored to the moving top-left corner */
   ::view-transition-old(active-tab),
   ::view-transition-new(active-tab) {
-    inline-size: 100%;
-    block-size: 100%;
-    object-fit: none;
-    object-position: center;
-    animation-duration: 0.3s;
+    inline-size: auto;
+    block-size: auto;
+  }
+
+  ::view-transition-old(active-tab) {
+    animation-duration: 0.25s;
+  }
+
+  ::view-transition-new(active-tab) {
+    animation-duration: 0.4s;
   }
 
   /* Content slides in the direction of travel (types set by the pagereveal script) */
   ::view-transition-group(service-body) {
     animation-duration: 0.45s;
     animation-timing-function: var(--ease-out);
+    /* Same compositor-only treatment as the pill: the copy differs in height between pages */
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  ::view-transition-old(service-body),
+  ::view-transition-new(service-body) {
+    inline-size: auto;
+    block-size: auto;
   }
 
   html:active-view-transition-type(forward) {
