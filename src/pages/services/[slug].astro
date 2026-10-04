@@ -14,9 +14,27 @@ interface Props {
 
 const { service } = Astro.props;
 const gallery = galleryFor(service.slug);
+const serviceOrder = services.map((s) => s.slug);
 ---
 
 <BaseLayout title={service.title} description={service.body[0]}>
+  <!--
+    Tags the cross-document view transition as "forward" or "backward" so the content slides
+    the right way. Inline and in <head> so it runs before the first paint, when pagereveal fires.
+  -->
+  <script slot="head" is:inline define:vars={{ serviceOrder }}>
+    window.addEventListener('pagereveal', (e) => {
+      const from = window.navigation?.activation?.from?.url;
+      const to = window.navigation?.activation?.entry?.url;
+      if (!e.viewTransition || !from || !to) return;
+      const index = (url) => serviceOrder.findIndex((slug) => new URL(url).pathname.includes(`/services/${slug}/`));
+      const a = index(from);
+      const b = index(to);
+      if (a < 0 || b < 0 || a === b) return;
+      e.viewTransition.types.add(b > a ? 'forward' : 'backward');
+    });
+  </script>
+
   <section class="service">
     <div class="container">
       <nav aria-label="Services">
@@ -61,6 +79,106 @@ const gallery = galleryFor(service.slug);
     </div>
   </section>
 </BaseLayout>
+
+<style is:global>
+  /*
+    Smooth switching between service pages, using cross-document view transitions.
+    Only the service pages opt in, so other navigations behave normally.
+    Unsupported browsers (and reduced motion) just get a regular page load.
+  */
+  @media (prefers-reduced-motion: no-preference) {
+    @view-transition {
+      navigation: auto;
+    }
+  }
+
+  /* Header stays put; the active pill and the page content get their own animations */
+  .site-header {
+    view-transition-name: site-header;
+  }
+
+  .tab[aria-current='page'] {
+    view-transition-name: active-tab;
+  }
+
+  .split {
+    view-transition-name: service-body;
+  }
+
+  ::view-transition-group(root) {
+    animation-duration: 0.35s;
+  }
+
+  /* The pill: the group box glides and resizes with an ink background, the labels crossfade without stretching */
+  ::view-transition-group(active-tab) {
+    animation-duration: 0.5s;
+    animation-timing-function: var(--ease-out);
+    background: var(--color-ink);
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+  }
+
+  ::view-transition-old(active-tab),
+  ::view-transition-new(active-tab) {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: none;
+    object-position: center;
+    animation-duration: 0.3s;
+  }
+
+  /* Content slides in the direction of travel (types set by the pagereveal script) */
+  ::view-transition-group(service-body) {
+    animation-duration: 0.45s;
+    animation-timing-function: var(--ease-out);
+  }
+
+  html:active-view-transition-type(forward) {
+    &::view-transition-old(service-body) {
+      animation: svc-out-left 0.3s ease both;
+    }
+    &::view-transition-new(service-body) {
+      animation: svc-in-right 0.5s var(--ease-out) 0.05s both;
+    }
+  }
+
+  html:active-view-transition-type(backward) {
+    &::view-transition-old(service-body) {
+      animation: svc-out-right 0.3s ease both;
+    }
+    &::view-transition-new(service-body) {
+      animation: svc-in-left 0.5s var(--ease-out) 0.05s both;
+    }
+  }
+
+  @keyframes svc-out-left {
+    to {
+      opacity: 0;
+      transform: translateX(-48px);
+    }
+  }
+
+  @keyframes svc-in-right {
+    from {
+      opacity: 0;
+      transform: translateX(48px);
+    }
+  }
+
+  @keyframes svc-out-right {
+    to {
+      opacity: 0;
+      transform: translateX(48px);
+    }
+  }
+
+  @keyframes svc-in-left {
+    from {
+      opacity: 0;
+      transform: translateX(-48px);
+    }
+  }
+</style>
 
 <style>
   .service {
