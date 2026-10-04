@@ -200,10 +200,6 @@ const inServices = path.startsWith('/services/');
       padding: 11px 16px;
       font-size: 14px;
     }
-
-    .logo {
-      font-size: 23px;
-    }
   }
 
   /* Logo wordmark */
@@ -215,10 +211,17 @@ const inServices = path.startsWith('/services/');
     text-align: center;
     line-height: 0.86;
     font-weight: var(--weight-thin);
-    font-size: 26px;
+    font-size: 32px;
     letter-spacing: 0.02em;
     color: var(--color-teal);
     text-transform: uppercase;
+  }
+
+  /* Small phones: the logo shares the bar with the menu button and "Get in touch" */
+  @media (max-width: 479px) {
+    .logo {
+      font-size: 25px;
+    }
   }
 
   .bar__end {
