@@ -30,6 +30,8 @@ export interface Service {
   cardTitle: string;
   /** Label used in the footer and mobile menu. */
   navLabel: string;
+  /** Short label for the service tabs on small screens. */
+  tabLabel: string;
   tagline: string;
   /** Subheading on the service page. */
   subtitle: string;
@@ -45,6 +47,7 @@ export const services: Service[] = [
     title: 'Curtains and Blinds',
     cardTitle: 'Curtains And Blinds',
     navLabel: 'Curtains and Blinds',
+    tabLabel: 'Curtains & Blinds',
     tagline: 'Made to measure window treatments',
     subtitle: 'Bespoke Window Coverings for Every Property',
     body: [
@@ -61,6 +64,7 @@ export const services: Service[] = [
     title: 'Home Staging & Bespoke Furniture Packs',
     cardTitle: 'Home Staging & Bespoke Furniture Packs',
     navLabel: 'Home Staging & Bespoke',
+    tabLabel: 'Home Staging',
     tagline: 'We make your investment property feel like home',
     subtitle: 'We make your investment property feel like home',
     body: [
@@ -77,6 +81,7 @@ export const services: Service[] = [
     title: 'Common Parts',
     cardTitle: 'Common Parts',
     navLabel: 'Common Parts',
+    tabLabel: 'Common Parts',
     tagline: 'Elevate your communal spaces with Indigo Interiors',
     subtitle: 'Elevate your communal spaces with Indigo Interiors',
     body: [

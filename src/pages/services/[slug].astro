@@ -1,6 +1,6 @@
 ---
 import type { GetStaticPaths } from 'astro';
-import { Image } from 'astro:assets';
+import { Image, getImage } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Gallery from '../../components/Gallery.astro';
 import { services, serviceHref, galleryFor, routes, type Service } from '../../data/site';
@@ -15,6 +15,15 @@ interface Props {
 const { service } = Astro.props;
 const gallery = galleryFor(service.slug);
 const serviceOrder = services.map((s) => s.slug);
+
+// Same widths/sizes as the feature <Image> below, so these URLs match what the other pages request
+const featureWidths = [480, 720, 960, 1280];
+const featureSizes = '(min-width: 900px) 50vw, 100vw';
+const otherFeatures = await Promise.all(
+  services
+    .filter((s) => s.slug !== service.slug)
+    .map((s) => getImage({ src: s.image, widths: featureWidths })),
+);
 ---
 
 <BaseLayout title={service.title} description={service.body[0]}>
@@ -38,7 +47,7 @@ const serviceOrder = services.map((s) => s.slug);
   <section class="service">
     <div class="container">
       <nav aria-label="Services">
-        <ul role="list" class="tabs">
+        <ol role="list" class="tabs">
           {
             services.map((s) => (
               <li>
@@ -47,12 +56,15 @@ const serviceOrder = services.map((s) => s.slug);
                   href={serviceHref(s.slug)}
                   aria-current={s.slug === service.slug ? 'page' : undefined}
                 >
-                  {s.cardTitle}
+                  <span class="tab__num" aria-hidden="true">{s.num}</span>
+                  <span class="tab__label tab__label--full">{s.cardTitle}</span>
+                  <span class="tab__label tab__label--short" aria-hidden="true">{s.tabLabel}</span>
+                  {s.slug === service.slug && <span class="tab__bar" aria-hidden="true" />}
                 </a>
               </li>
             ))
           }
-        </ul>
+        </ol>
       </nav>
 
       <div class="split">
@@ -66,8 +78,8 @@ const serviceOrder = services.map((s) => s.slug);
           <Image
             src={service.image}
             alt={service.imageAlt}
-            widths={[480, 720, 960, 1280]}
-            sizes="(min-width: 900px) 50vw, 100vw"
+            widths={featureWidths}
+            sizes={featureSizes}
             loading="eager"
             fetchpriority="high"
           />
@@ -78,7 +90,28 @@ const serviceOrder = services.map((s) => s.slug);
       <Gallery images={gallery} label={service.title} />
     </div>
   </section>
+
+  <!-- The other services' feature photos, fetched once this page is idle so switching tabs never waits on them -->
+  <template data-preload-features>
+    {otherFeatures.map((img) => <img srcset={img.srcSet.attribute} sizes={featureSizes} src={img.src} alt="" />)}
+  </template>
 </BaseLayout>
+
+<script>
+  const preload = () => {
+    const tpl = document.querySelector<HTMLTemplateElement>('[data-preload-features]');
+    tpl?.content.querySelectorAll('img').forEach((src) => {
+      const img = new Image();
+      img.sizes = src.sizes;
+      img.srcset = src.srcset;
+      img.src = src.getAttribute('src') ?? '';
+    });
+  };
+  const whenIdle = () =>
+    'requestIdleCallback' in window ? requestIdleCallback(preload, { timeout: 3000 }) : setTimeout(preload, 1500);
+  if (document.readyState === 'complete') whenIdle();
+  else window.addEventListener('load', whenIdle, { once: true });
+</script>
 
 <style is:global>
   /*
@@ -97,8 +130,8 @@ const serviceOrder = services.map((s) => s.slug);
     view-transition-name: site-header;
   }
 
-  .tab[aria-current='page'] {
-    view-transition-name: active-tab;
+  .tab__bar {
+    view-transition-name: tab-bar;
   }
 
   .split {
@@ -110,31 +143,26 @@ const serviceOrder = services.map((s) => s.slug);
   }
 
   /*
-    The pill glides to the new tab while its old shape crossfades into the new one.
-    Only transform and opacity animate, so it runs on the compositor and stays smooth
-    while the new page is still loading. (The default group animation also tweens
-    width and height, which runs on the main thread and stutters.)
+    The teal bar slides one column across. Every column is the same width, so the bar never
+    changes shape: only transform animates, on the compositor. (Pinning the group size stops
+    the default width/height tween, which runs on the main thread.)
   */
-  ::view-transition-group(active-tab) {
-    animation-duration: 0.4s;
+  ::view-transition-group(tab-bar) {
+    animation-duration: 0.45s;
     animation-timing-function: var(--ease-out);
     width: 0 !important;
     height: 0 !important;
   }
 
-  /* Both snapshots keep their natural size, anchored to the moving top-left corner */
-  ::view-transition-old(active-tab),
-  ::view-transition-new(active-tab) {
+  ::view-transition-old(tab-bar),
+  ::view-transition-new(tab-bar) {
     inline-size: auto;
     block-size: auto;
+    animation: none;
   }
 
-  ::view-transition-old(active-tab) {
-    animation-duration: 0.25s;
-  }
-
-  ::view-transition-new(active-tab) {
-    animation-duration: 0.4s;
+  ::view-transition-old(tab-bar) {
+    display: none;
   }
 
   /* Content slides in the direction of travel (types set by the pagereveal script) */
@@ -205,35 +233,73 @@ const serviceOrder = services.map((s) => s.slug);
   }
 
   .tabs {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: clamp(28px, 4vw, 48px);
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(12px, 2.5vw, 32px);
+    margin-bottom: clamp(32px, 5vw, 56px);
+    border-bottom: 1px solid var(--line);
   }
 
   .tab {
-    display: block;
-    padding: 10px 18px;
-    border-radius: var(--radius-pill);
-    font-size: 15px;
-    font-weight: var(--weight-semibold);
-    color: var(--color-ink);
-    border: 1px solid var(--line-strong);
-    transition:
-      background-color var(--dur-base),
-      border-color var(--dur-base),
-      color var(--dur-base);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    height: 100%;
+    padding: 4px 0 18px;
+    color: var(--color-muted);
+    transition: color var(--dur-base);
   }
 
   .tab:hover {
     color: var(--color-ink);
-    border-color: var(--color-ink);
   }
 
   .tab[aria-current='page'] {
-    background: var(--color-ink);
-    border-color: var(--color-ink);
-    color: var(--color-white);
+    color: var(--color-ink);
+  }
+
+  .tab__num {
+    font-size: 13px;
+    font-weight: var(--weight-bold);
+    letter-spacing: 0.04em;
+    color: var(--color-teal);
+  }
+
+  .tab__label {
+    font-size: clamp(15px, 1.4vw, 19px);
+    font-weight: var(--weight-medium);
+    line-height: 1.25;
+  }
+
+  .tab__label--short {
+    display: none;
+  }
+
+  /* Sits on the row's bottom rule */
+  .tab__bar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    background: var(--color-teal);
+    border-radius: 2px;
+  }
+
+  @media (max-width: 599px) {
+    .tab__label--full {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+    }
+
+    .tab__label--short {
+      display: block;
+    }
   }
 
   .split {

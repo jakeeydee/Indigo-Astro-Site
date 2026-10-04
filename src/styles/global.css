@@ -73,7 +73,8 @@ a:hover {
   color: var(--color-teal-deep);
 }
 
-ul[role='list'] {
+ul[role='list'],
+ol[role='list'] {
   list-style: none;
   padding: 0;
 }
