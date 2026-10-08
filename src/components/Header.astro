@@ -1,13 +1,21 @@
 ---
 import { Image } from 'astro:assets';
-import { allPages, routes, services, serviceHref } from '../data/site';
+import { routes, services, serviceHref, site } from '../data/site';
 
 const path = Astro.url.pathname;
 const isCurrent = (href: string) => path === href;
 const inServices = path.startsWith('/services/');
+
+const mobilePrimary = [
+  { label: 'Home', href: routes.home },
+  { label: 'About Us', href: routes.about },
+  { label: 'Contact Us', href: routes.contact },
+];
 ---
 
 <header class="site-header" data-header>
+  <div class="menu-backdrop" aria-hidden="true" data-menu-backdrop></div>
+
   <div class="bar">
     <nav class="nav" aria-label="Primary">
       <a class="nav__item" href={routes.home} aria-current={isCurrent(routes.home) ? 'page' : undefined}>Home</a>
@@ -85,18 +93,57 @@ const inServices = path.startsWith('/services/');
     </div>
   </div>
 
-  <nav class="mobile-menu" id="mobile-menu" aria-label="Mobile" hidden data-menu>
-    <ul role="list">
-      {
-        allPages.map((p) => (
-          <li>
-            <a href={p.href} aria-current={isCurrent(p.href) ? 'page' : undefined}>
-              {p.label}
-            </a>
-          </li>
-        ))
-      }
-    </ul>
+  <nav class="mobile-menu" id="mobile-menu" aria-label="Mobile" data-menu>
+    <div class="mm">
+      <ul role="list" class="mm__primary">
+        {
+          mobilePrimary.map((p, i) => (
+            <li class="mm__item" style={`--i: ${i}`}>
+              <a class="mm__link" href={p.href} aria-current={isCurrent(p.href) ? 'page' : undefined}>
+                {p.label}
+                <span class="mm__arrow" aria-hidden="true">→</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+
+      <p class="mm__label mm__item" style="--i: 3" id="mm-services-label">Services</p>
+      <ul role="list" class="mm__services" aria-labelledby="mm-services-label">
+        {
+          services.map((s, i) => (
+            <li class="mm__item" style={`--i: ${4 + i}`}>
+              <a
+                class="mm__svc"
+                href={serviceHref(s.slug)}
+                aria-current={isCurrent(serviceHref(s.slug)) ? 'page' : undefined}
+              >
+                <span class="mm__thumb">
+                  <Image src={s.image} alt="" widths={[112, 224]} sizes="56px" loading="lazy" />
+                </span>
+                <span class="mm__text">
+                  <span class="mm__num">{s.num}</span>
+                  <span class="mm__title">{s.cardTitle}</span>
+                  <span class="mm__tag">{s.tagline}</span>
+                </span>
+                <span class="mm__arrow" aria-hidden="true">→</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+
+      <div class="mm__contact mm__item" style="--i: 7">
+        <a class="mm__contact-row" href={site.phone.href}>
+          <span><span class="mm__contact-label">Call us</span>{site.phone.display}</span>
+          <span class="mm__contact-icon" aria-hidden="true">↗</span>
+        </a>
+        <a class="mm__contact-row" href={`mailto:${site.email}`}>
+          <span><span class="mm__contact-label">Email us</span>{site.email}</span>
+          <span class="mm__contact-icon" aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </div>
   </nav>
 </header>
 
@@ -136,17 +183,26 @@ const inServices = path.startsWith('/services/');
     if (isOpen() && !dropdown.contains(e.target as Node)) setDropdown(false);
   });
 
-  // Mobile menu
+  // Mobile menu: open state lives on the header ([data-menu-open]) so CSS can animate it in and out
   const toggle = header.querySelector<HTMLButtonElement>('[data-menu-toggle]')!;
   const menu = header.querySelector<HTMLElement>('[data-menu]')!;
+  const backdrop = header.querySelector<HTMLElement>('[data-menu-backdrop]')!;
+  const menuIsOpen = () => header.hasAttribute('data-menu-open');
 
   const setMenu = (open: boolean) => {
     toggle.setAttribute('aria-expanded', String(open));
     toggle.setAttribute('aria-label', open ? 'Close menu' : 'Menu');
-    menu.hidden = !open;
+    header.toggleAttribute('data-menu-open', open);
+    document.documentElement.classList.toggle('menu-open', open); // locks page scroll
   };
 
-  toggle.addEventListener('click', () => setMenu(toggle.getAttribute('aria-expanded') !== 'true'));
+  toggle.addEventListener('click', () => setMenu(!menuIsOpen()));
+  backdrop.addEventListener('click', () => setMenu(false));
+  // Close after choosing a link (matters for same-page links and when the page is restored from the back/forward cache)
+  menu.addEventListener('click', (e) => {
+    if ((e.target as Element).closest('a')) setMenu(false);
+  });
+  window.addEventListener('pageshow', () => setMenu(false));
   window.matchMedia('(min-width: 900px)').addEventListener('change', (e) => {
     if (e.matches) setMenu(false);
   });
@@ -157,7 +213,7 @@ const inServices = path.startsWith('/services/');
       setDropdown(false);
       trigger.focus();
     }
-    if (!menu.hidden) {
+    if (menuIsOpen()) {
       setMenu(false);
       toggle.focus();
     }
@@ -268,48 +324,277 @@ const inServices = path.startsWith('/services/');
     gap: 5px;
   }
 
+  /* Two lines that rotate into an X */
   .menu-toggle span {
     width: 16px;
     height: 1.5px;
     background: var(--color-ink);
+    transition: transform 0.35s var(--ease-out);
   }
 
+  .menu-toggle[aria-expanded='true'] span:first-child {
+    transform: translateY(3.25px) rotate(45deg);
+  }
+
+  .menu-toggle[aria-expanded='true'] span:last-child {
+    transform: translateY(-3.25px) rotate(-45deg);
+  }
+
+  :global(html.menu-open) {
+    overflow: hidden;
+  }
+
+  /* Dims and softens the page behind the open menu; tapping it closes the menu */
+  .menu-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: rgb(20 32 30 / 0.28);
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 0.25s ease,
+      visibility 0.25s;
+  }
+
+  .site-header[data-menu-open] .menu-backdrop {
+    opacity: 1;
+    visibility: visible;
+    transition:
+      opacity 0.35s ease,
+      visibility 0s;
+  }
+
+  /*
+    Mobile menu. Closed: invisible, nudged up and slightly smaller (out of the tab order via visibility).
+    Opening: fades and settles into place while the rows rise in one after another.
+    Closing: a quicker fade with no stagger.
+  */
   .mobile-menu {
     max-width: var(--container-max);
     margin: 10px auto 0;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-10px) scale(0.98);
+    transform-origin: 50% 0;
+    transition:
+      opacity 0.2s ease,
+      transform 0.3s ease,
+      visibility 0.2s;
+  }
+
+  .site-header[data-menu-open] .mobile-menu {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: none;
+    transition:
+      opacity 0.28s ease,
+      transform 0.5s var(--ease-out),
+      visibility 0s;
+  }
+
+  .mm {
     background: var(--color-white);
     border-radius: var(--radius-card);
-    padding: 12px;
+    padding: 10px;
     box-shadow: var(--shadow-menu);
+    border: 1px solid rgb(20 32 30 / 0.06);
+    max-height: calc(100dvh - 120px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
-  .mobile-menu ul {
+  .mm__item {
+    opacity: 0;
+    transform: translateY(8px);
+    transition:
+      opacity 0.2s ease,
+      transform 0.3s ease;
+  }
+
+  .site-header[data-menu-open] .mm__item {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 0.35s ease calc(0.06s + var(--i) * 0.035s),
+      transform 0.5s var(--ease-out) calc(0.06s + var(--i) * 0.035s);
+  }
+
+  .mm__arrow {
+    color: var(--color-muted);
+    font-size: 16px;
+    transition:
+      color var(--dur-base),
+      transform 0.35s var(--ease-out);
+  }
+
+  /* Main pages */
+  .mm__link {
     display: flex;
-    flex-direction: column;
-  }
-
-  .mobile-menu a {
-    display: block;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
     padding: 14px 16px;
-    font-size: 20px;
+    border-radius: 18px;
+    font-size: 22px;
     font-weight: var(--weight-medium);
-    border-radius: 16px;
+    letter-spacing: -0.01em;
     color: var(--color-ink);
     transition: background-color var(--dur-fast);
   }
 
-  .mobile-menu a:hover {
+  .mm__link:hover,
+  .mm__link:active {
     background: var(--color-stone);
+    color: var(--color-ink);
   }
 
-  .mobile-menu a[aria-current='page'] {
+  .mm__link[aria-current='page'] {
     color: var(--color-teal);
+  }
+
+  .mm__link[aria-current='page'] .mm__arrow,
+  .mm__link:hover .mm__arrow {
+    color: var(--color-teal);
+    transform: translateX(3px);
+  }
+
+  /* Services */
+  .mm__label {
+    margin: 6px 6px 0;
+    padding: 16px 10px 8px;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+    font-weight: var(--weight-semibold);
+    letter-spacing: 0.04em;
+    color: var(--color-muted);
+  }
+
+  .mm__services {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .mm__svc {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 14px 8px 8px;
+    border-radius: 18px;
+    color: var(--color-ink);
+    transition: background-color var(--dur-fast);
+  }
+
+  .mm__svc:hover,
+  .mm__svc:active,
+  .mm__svc[aria-current='page'] {
+    background: var(--color-cream);
+    color: var(--color-ink);
+  }
+
+  .mm__svc:hover .mm__arrow,
+  .mm__svc[aria-current='page'] .mm__arrow {
+    color: var(--color-teal);
+    transform: translateX(3px);
+  }
+
+  .mm__thumb {
+    flex: none;
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--color-placeholder);
+  }
+
+  .mm__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .mm__text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .mm__num {
+    font-size: 12px;
+    font-weight: var(--weight-bold);
+    letter-spacing: 0.04em;
+    color: var(--color-teal);
+  }
+
+  .mm__title {
+    font-size: 16px;
+    font-weight: var(--weight-semibold);
+    line-height: 1.2;
+  }
+
+  .mm__tag {
+    font-size: 13px;
+    line-height: 1.35;
+    color: var(--color-muted);
+  }
+
+  /* Contact strip */
+  .mm__contact {
+    margin-top: 10px;
+    padding: 4px;
+    border-radius: 20px;
+    background: var(--color-cream);
+    display: grid;
+  }
+
+  .mm__contact-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 16px;
+    font-size: 16px;
+    font-weight: var(--weight-semibold);
+    color: var(--color-ink);
+    transition: background-color var(--dur-fast);
+  }
+
+  .mm__contact-row + .mm__contact-row {
+    border-top: 1px solid var(--line);
+    border-radius: 0 0 16px 16px;
+  }
+
+  .mm__contact-row:hover,
+  .mm__contact-row:active {
+    background: var(--color-cream-hover);
+    color: var(--color-ink);
+  }
+
+  .mm__contact-label {
+    display: block;
+    font-size: 13px;
+    font-weight: var(--weight-medium);
+    color: var(--color-muted);
+  }
+
+  .mm__contact-icon {
+    color: var(--color-teal);
+    font-size: 18px;
   }
 
   /* Wide: inline nav */
   @media (min-width: 900px) {
     .menu-toggle,
-    .mobile-menu {
+    .mobile-menu,
+    .menu-backdrop {
       display: none;
     }
 
