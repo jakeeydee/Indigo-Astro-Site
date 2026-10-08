@@ -317,11 +317,18 @@ const inServices = path.startsWith('/services/');
       grid-column: 1;
       grid-row: 1;
       justify-self: start;
+      align-self: stretch; /* full bar height, so the dropdown is measured from the bar's edge */
       display: flex;
       align-items: center;
       gap: 6px;
       font-size: 15px;
       font-weight: var(--weight-medium);
+    }
+
+    .dd {
+      align-self: stretch;
+      display: flex;
+      align-items: center;
     }
   }
 
@@ -379,10 +386,11 @@ const inServices = path.startsWith('/services/');
   /* Below 1100px the panel spans the whole header bar; above it, it anchors to the trigger. */
   .dd__panel {
     position: absolute;
-    top: 100%;
+    top: calc(100% - 10px); /* start inside the bar's padding so the hover area meets the Services item */
     left: 0;
     right: 0;
-    padding-top: 14px;
+    /* Gap below the bar; the padding doubles as a hover bridge so the menu doesn't close on the way down */
+    padding-top: 23px; /* 12px gap below the bar + its 10px padding and 1px border */
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -420,6 +428,7 @@ const inServices = path.startsWith('/services/');
     .dd__panel {
       left: -8px;
       right: auto;
+      top: 100%;
     }
 
     .dd__card {
