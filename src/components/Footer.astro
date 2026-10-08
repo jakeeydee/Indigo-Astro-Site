@@ -15,14 +15,14 @@ import { site, allPages, socials } from '../data/site';
         sizes="160px"
       />
 
-      <nav class="col" aria-labelledby="footer-pages">
+      <nav class="col col--pages" aria-labelledby="footer-pages">
         <h2 class="col__label" id="footer-pages">Pages</h2>
         <ul role="list">
           {allPages.map((p) => <li><a href={p.href}>{p.label}</a></li>)}
         </ul>
       </nav>
 
-      <div class="col">
+      <div class="col col--contact">
         <h2 class="col__label">Contact</h2>
         <a href={site.phone.href}>Tel: {site.phone.display}</a>
         <a href={`mailto:${site.email}`}>{site.email}</a>
@@ -71,16 +71,66 @@ import { site, allPages, socials } from '../data/site';
     color: var(--color-white);
   }
 
+  /* Phones: logo with the back-to-top button beside it, then pages, then contact */
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
-    gap: 40px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'logo top'
+      'pages pages'
+      'contact contact';
+    gap: 32px 24px;
     align-items: start;
   }
 
   .logo {
-    width: 160px;
+    grid-area: logo;
+    width: clamp(120px, 16vw, 160px);
     height: auto;
+  }
+
+  .col--pages {
+    grid-area: pages;
+  }
+
+  .col--contact {
+    grid-area: contact;
+  }
+
+  .top {
+    grid-area: top;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  /* Tablets: three columns, back-to-top tucked under the contact details */
+  @media (min-width: 600px) {
+    .grid {
+      grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr);
+      grid-template-areas:
+        'logo pages contact'
+        'logo pages top';
+      gap: 24px clamp(24px, 4vw, 40px);
+    }
+
+    .top {
+      justify-content: flex-start;
+      align-self: end;
+    }
+  }
+
+  /* Desktop: the design's four columns */
+  @media (min-width: 1000px) {
+    .grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+      grid-template-areas: 'logo pages contact top';
+      gap: 40px;
+    }
+
+    .top {
+      align-self: start;
+      justify-content: flex-end;
+    }
   }
 
   .col {
@@ -97,6 +147,10 @@ import { site, allPages, socials } from '../data/site';
   }
 
   .col a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 26px;
+    overflow-wrap: anywhere;
     transition: opacity var(--dur-fast);
   }
 
@@ -109,11 +163,6 @@ import { site, allPages, socials } from '../data/site';
     font-weight: var(--weight-semibold);
     opacity: 0.7;
     margin-bottom: 6px;
-  }
-
-  .top {
-    display: flex;
-    justify-content: flex-end;
   }
 
   .top__btn {
@@ -150,7 +199,39 @@ import { site, allPages, socials } from '../data/site';
   }
 
   .socials a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 26px;
+    min-width: 24px;
     transition: opacity var(--dur-fast);
+  }
+
+  /* Touch screens: every footer link becomes a comfortable 44px target */
+  @media (pointer: coarse) {
+    .col ul,
+    .col {
+      gap: 0;
+    }
+
+    .col__label {
+      margin-bottom: 4px;
+    }
+
+    .col a {
+      min-height: 44px;
+    }
+
+    .socials {
+      gap: 0 6px;
+      margin-inline: -8px; /* cancels the links' side padding so every wrapped row lines up with the text above */
+    }
+
+    .socials a {
+      min-height: 44px;
+      min-width: 44px;
+      padding-inline: 8px;
+    }
   }
 
   .socials a:hover {

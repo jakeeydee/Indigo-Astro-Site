@@ -245,19 +245,6 @@ const mobilePrimary = [
     box-shadow: var(--shadow-header);
   }
 
-  /* Small phones: equal side columns are too narrow for the CTA, so let them size to content */
-  @media (max-width: 479px) {
-    .bar {
-      grid-template-columns: auto minmax(0, 1fr) auto;
-      gap: 8px;
-    }
-
-    .cta {
-      padding: 11px 16px;
-      font-size: 14px;
-    }
-  }
-
   /* Logo wordmark */
   .logo {
     grid-column: 2;
@@ -271,13 +258,8 @@ const mobilePrimary = [
     letter-spacing: 0.02em;
     color: var(--color-teal);
     text-transform: uppercase;
-  }
-
-  /* Small phones: the logo shares the bar with the menu button and "Get in touch" */
-  @media (max-width: 479px) {
-    .logo {
-      font-size: 25px;
-    }
+    min-height: 44px;
+    justify-content: center;
   }
 
   .bar__end {
@@ -618,6 +600,9 @@ const mobilePrimary = [
   }
 
   .nav__item {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
     padding: 10px 16px;
     border: 0;
     border-radius: var(--radius-pill);
@@ -828,5 +813,44 @@ const mobilePrimary = [
     font-weight: var(--weight-bold);
     color: var(--color-teal);
     white-space: nowrap;
+  }
+
+  /* ---- Small-screen overrides: kept last so they always beat the base rules above ---- */
+
+  /* Small phones: equal side columns are too narrow for the CTA, so let them size to content */
+  @media (max-width: 479px) {
+    .bar {
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 8px;
+    }
+
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
+      padding: 11px 16px;
+      font-size: 14px;
+    }
+  }
+
+  /* Small phones: the logo shares the bar with the menu button and "Get in touch" */
+  @media (max-width: 479px) {
+    .logo {
+      font-size: 25px;
+    }
+  }
+
+  /*
+    The smallest phones (under 360px) don't have room for all three, so the CTA steps aside
+    (Contact Us, phone and email are all in the menu) and the logo is centred again.
+  */
+  @media (max-width: 359px) {
+    .bar {
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    }
+
+    .bar__end {
+      display: none;
+    }
   }
 </style>

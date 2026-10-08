@@ -16,7 +16,7 @@ import { services, serviceHref } from '../../data/site';
           <li>
             <a class="card" href={serviceHref(s.slug)}>
               <span class="media">
-                <Image src={s.image} alt={s.imageAlt} widths={[480, 720, 960]} sizes="(min-width: 1100px) 420px, (min-width: 720px) 50vw, 100vw" />
+                <Image src={s.image} alt={s.imageAlt} widths={[480, 720, 960]} sizes="(min-width: 1320px) 420px, (min-width: 1000px) 33vw, (min-width: 600px) 42vw, 100vw" />
               </span>
               <span class="body">
                 <span class="num">{s.num}</span>
@@ -56,10 +56,17 @@ import { services, serviceHref } from '../../data/site';
     font-weight: var(--weight-medium);
   }
 
+  /* Phones: stacked cards. Tablets: one card per row, photo beside text. Desktop: three across. */
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+    grid-template-columns: minmax(0, 1fr);
     gap: clamp(16px, 2vw, 24px);
+  }
+
+  @media (min-width: 1000px) {
+    .grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
   }
 
   .card {
@@ -139,5 +146,28 @@ import { services, serviceHref } from '../../data/site';
     gap: 10px;
     font-weight: var(--weight-semibold);
     font-size: 15px;
+  }
+
+  @media (min-width: 600px) and (max-width: 999px) {
+    .card {
+      flex-direction: row;
+      align-items: stretch;
+      gap: 24px;
+      padding: 10px;
+    }
+
+    .media {
+      flex: 0 0 46%;
+      aspect-ratio: 4 / 3;
+    }
+
+    .body {
+      padding: 14px 12px 12px 0;
+      justify-content: center;
+    }
+
+    .tag {
+      flex: 0 0 auto;
+    }
   }
 </style>

@@ -11,7 +11,7 @@ import { routes } from '../../data/site';
       src={heroImage}
       alt="Living room with curved sofa and round rug"
       widths={[640, 960, 1280, 1600, 2000, 2400]}
-      sizes="100vw"
+      sizes="112vw"
       loading="eager"
       fetchpriority="high"
     />
@@ -137,7 +137,7 @@ import { routes } from '../../data/site';
     max-width: var(--container-max);
     margin: 0 auto;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+    grid-template-columns: minmax(0, 1fr);
     gap: clamp(20px, 4vw, 56px);
     align-items: end;
   }
@@ -174,7 +174,18 @@ import { routes } from '../../data/site';
     flex-direction: column;
     gap: 24px;
     max-width: 440px;
-    justify-self: end;
+    justify-self: start;
+  }
+
+  /* Beside the title (wide screens) it sits on the right; stacked below it, it lines up on the left */
+  @media (min-width: 1000px) {
+    .inner {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .aside {
+      justify-self: end;
+    }
   }
 
   .lede {
