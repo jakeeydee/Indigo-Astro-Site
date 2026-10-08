@@ -36,16 +36,34 @@ import { routes } from '../../data/site';
       </div>
     </div>
   </div>
+
+  <!--
+    Cream corner pieces that fade in as the photo shrinks, giving it rounded corners without repainting it.
+    They sit in their own layer that moves exactly like the frame but isn't clipped by it, so they can
+    overlap the frame's edge and hide the hairline that clipping would leave.
+  -->
+  <div class="corners" aria-hidden="true">
+    <span class="corner corner--tl"></span>
+    <span class="corner corner--tr"></span>
+    <span class="corner corner--bl"></span>
+    <span class="corner corner--br"></span>
+  </div>
 </section>
 
 <script>
-  // Scroll-linked hero: over the first 80% of a viewport of scrolling, the photo frame shrinks
-  // into a rounded card and the image settles from a slight zoom. Progress is eased (ease-out quad)
-  // and written to --e (0 to 1), which the CSS turns into transforms.
+  /*
+    Scroll-linked hero. Over the first 80% of a screen of scrolling, the photo shrinks into a
+    rounded card and the image settles from a slight zoom.
+
+    Browsers with CSS scroll-driven animations (Safari 26+, Chrome, Edge) run it entirely in CSS,
+    in step with the scroll itself. This script is only the fallback for the rest (e.g. Firefox):
+    it writes the eased progress to --e (0 to 1) once per frame.
+  */
   const hero = document.querySelector<HTMLElement>('[data-hero]');
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const cssDriven = CSS.supports('animation-timeline: scroll()');
 
-  if (hero) {
+  if (hero && !cssDriven) {
     let frame = 0;
 
     const update = () => {
@@ -78,10 +96,14 @@ import { routes } from '../../data/site';
 </script>
 
 <style>
+  /*
+    Fill the largest viewport (the screen with the browser's bars collapsed), so on phones the photo
+    reaches the bottom edge behind Safari's translucent toolbar instead of leaving a cream strip.
+  */
   .hero {
     position: relative;
     height: 100vh;
-    height: 100svh;
+    height: 100lvh;
     min-height: 600px;
   }
 
@@ -99,17 +121,134 @@ import { routes } from '../../data/site';
     object-fit: cover;
   }
 
-  /* Driven by --e from the script above; only active when motion is allowed */
-  .hero[data-motion] .frame {
+  /*
+    Rounded corners: quarter-circle cream masks in each corner. They're 46px so that once the frame
+    has shrunk to 86% they read as the design's 40px radius. Only their opacity animates.
+  */
+  .corners {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  /*
+    Each piece is solid cream outside a quarter circle and grows from 0 to full size, scaled from
+    the frame's true corner, so the radius itself grows (0 to 40px once the frame is at 86%).
+    The pieces overhang the frame's edge by 2px so no hairline of photo shows past the curve.
+  */
+  .corner {
+    position: absolute;
+    width: 48px;
+    height: 48px;
+    transform: scale(0);
+    --mask: transparent 45.5px, var(--color-cream) 46px;
+  }
+
+  .corner--tl {
+    top: -2px;
+    left: -2px;
+    transform-origin: 2px 2px;
+    background: radial-gradient(circle at 100% 100%, var(--mask));
+  }
+
+  .corner--tr {
+    top: -2px;
+    right: -2px;
+    transform-origin: calc(100% - 2px) 2px;
+    background: radial-gradient(circle at 0 100%, var(--mask));
+  }
+
+  .corner--bl {
+    bottom: -2px;
+    left: -2px;
+    transform-origin: 2px calc(100% - 2px);
+    background: radial-gradient(circle at 100% 0, var(--mask));
+  }
+
+  .corner--br {
+    bottom: -2px;
+    right: -2px;
+    transform-origin: calc(100% - 2px) calc(100% - 2px);
+    background: radial-gradient(circle at 0 0, var(--mask));
+  }
+
+  /*
+    Motion. Only transform and opacity animate, so the browser can run it on the compositor.
+    Eased like the design: ease-out quad over the first 80% of a screen of scrolling.
+  */
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: scroll()) {
+      .frame,
+      .corners,
+      .photo,
+      .corner {
+        animation-duration: 1ms; /* required by some engines; the scroll timeline sets the real progress */
+        animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        animation-fill-mode: both;
+        animation-timeline: scroll(root block);
+        animation-range: 0 80vh;
+      }
+
+      .frame,
+      .corners {
+        transform-origin: 50% 0;
+        animation-name: hero-shrink;
+        will-change: transform;
+      }
+
+      .photo {
+        animation-name: hero-settle;
+        will-change: transform;
+      }
+
+      .corner {
+        animation-name: hero-corners;
+      }
+    }
+  }
+
+  @keyframes hero-shrink {
+    from {
+      transform: none;
+    }
+    to {
+      transform: translateY(24px) scale(0.86);
+    }
+  }
+
+  @keyframes hero-settle {
+    from {
+      transform: scale(1.12);
+    }
+    to {
+      transform: none;
+    }
+  }
+
+  @keyframes hero-corners {
+    from {
+      transform: scale(0);
+    }
+    to {
+      transform: scale(1);
+    }
+  }
+
+  /* Fallback for browsers without scroll-driven animations: --e comes from the script above */
+  .hero[data-motion] .frame,
+  .hero[data-motion] .corners {
     transform-origin: 50% 0;
     transform: translateY(calc(var(--e, 0) * 24px)) scale(calc(1 - var(--e, 0) * 0.14));
-    border-radius: calc(var(--e, 0) * 40px);
     will-change: transform;
   }
 
   .hero[data-motion] .photo {
     transform: scale(calc(1.12 - var(--e, 0) * 0.12));
     will-change: transform;
+  }
+
+  .hero[data-motion] .corner {
+    transform: scale(var(--e, 0));
   }
 
   .scrim {
@@ -131,6 +270,17 @@ import { routes } from '../../data/site';
     bottom: 0;
     padding: 0 clamp(20px, 5vw, 72px) clamp(32px, 6vh, 72px);
     color: var(--color-white);
+  }
+
+  /*
+    The hero is as tall as the largest viewport, so keep the heading and buttons clear of the
+    browser's toolbar: lift them by the difference between the large and small viewports
+    (zero on desktop, roughly the toolbar's height on phones).
+  */
+  @supports (height: 100svh) {
+    .content {
+      padding-bottom: calc(clamp(32px, 6svh, 72px) + (100lvh - 100svh));
+    }
   }
 
   .inner {
