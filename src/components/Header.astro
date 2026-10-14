@@ -221,14 +221,20 @@ const mobilePrimary = [
 </script>
 
 <style>
+  /*
+    The header's own box is transparent padding around the bar; let taps fall through it to the
+    page. The bar, the open menu and the backdrop opt back in below.
+  */
   .site-header {
     position: fixed;
     inset: 0 0 auto;
     z-index: 50;
     padding: 14px var(--page-pad);
+    pointer-events: none;
   }
 
   .bar {
+    pointer-events: auto;
     position: relative;
     max-width: var(--container-max);
     margin: 0 auto;
@@ -342,6 +348,7 @@ const mobilePrimary = [
   }
 
   .site-header[data-menu-open] .menu-backdrop {
+    pointer-events: auto;
     opacity: 1;
     visibility: visible;
     transition:
@@ -354,9 +361,14 @@ const mobilePrimary = [
     Opening: fades and settles into place while the rows rise in one after another.
     Closing: a quicker fade with no stagger.
   */
+  /* Out of the page flow, so the closed menu doesn't stretch the header over the page */
   .mobile-menu {
+    position: absolute;
+    top: calc(100% - 4px); /* 10px below the bar (the header has 14px of padding under it) */
+    left: var(--page-pad);
+    right: var(--page-pad);
     max-width: var(--container-max);
-    margin: 10px auto 0;
+    margin: 0 auto;
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
