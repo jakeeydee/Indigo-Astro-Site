@@ -406,7 +406,10 @@ const otherFeatures = await Promise.all(
     }
   }
 
-  /* Short laptop screens: tighten the vertical rhythm so "Get in touch" is on screen when the page opens */
+  /*
+    Short laptop screens: "Get in touch" moves up under the subheading, so it's on screen when the
+    page opens however long the description is. Taller screens keep it after the copy.
+  */
   @media (min-width: 900px) and (max-height: 820px) {
     .tabs {
       margin-bottom: 20px;
@@ -417,7 +420,12 @@ const otherFeatures = await Promise.all(
     }
 
     .btn--ink {
-      margin-top: 4px;
+      order: 1;
+      margin: 4px 0 8px;
+    }
+
+    .para {
+      order: 2;
     }
   }
 

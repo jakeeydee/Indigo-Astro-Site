@@ -1,7 +1,7 @@
 import type { ImageMetadata } from 'astro';
 import curtainsImage from '../assets/images/service-curtains-blinds.jpg';
 import stagingImage from '../assets/images/service-home-staging.jpg';
-import commonPartsImage from '../assets/images/service-common-parts.jpg';
+import commercialImage from '../assets/images/service-commercial.jpg';
 import videoShowcase from '../assets/images/video-showcase.jpg';
 import videoDayInTheLife from '../assets/images/video-day-in-the-life.jpg';
 
@@ -9,7 +9,7 @@ export const site = {
   name: 'Indigo Interiors',
   url: 'https://www.indigo-interiors.com',
   description:
-    'Interior design for the residential and commercial sector in London: curtains and blinds, home staging and bespoke furniture packs, and common parts.',
+    'Interior design for the residential and commercial sector in London: curtains and blinds, home staging and bespoke furniture packs, and commercial interiors.',
   phone: {
     display: '+44 7976 155741',
     href: 'tel:+447976155741',
@@ -76,19 +76,20 @@ export const services: Service[] = [
     imageAlt: 'Console table styled with flowers, a brass lamp and abstract artwork',
   },
   {
-    slug: 'common-parts',
+    slug: 'commercial',
     num: '03',
-    title: 'Common Parts',
-    cardTitle: 'Common Parts',
-    navLabel: 'Common Parts',
-    tabLabel: 'Common Parts',
-    tagline: 'Elevate your communal spaces with Indigo Interiors',
-    subtitle: 'Elevate your communal spaces with Indigo Interiors',
+    title: 'Commercial',
+    cardTitle: 'Commercial',
+    navLabel: 'Commercial',
+    tabLabel: 'Commercial',
+    tagline: 'Elevate your workplaces and shared spaces with Indigo Interiors',
+    subtitle: 'Elevate your workplaces and shared spaces with Indigo Interiors',
     body: [
-      'At Indigo Interiors, we transform communal areas in residential and commercial developments into warm, inviting spaces. Our expert team carefully selects, installs, and arranges furniture, accessories, artwork, curtains, and blinds, enhancing shared environments with both style and functionality.',
-      'Whether it’s a lobby, lounge, hallways or co-working space, we create welcoming atmospheres that leave a lasting impression.',
+      'At Indigo Interiors, we create welcoming, beautifully considered spaces for commercial and residential developments. Our expertise covers offices, reception areas, marketing suites, and the communal areas of residential buildings, including lobbies, lounges, hallways and co-working spaces.',
+      'Our team handles everything from selecting and sourcing to installation and styling, including furniture, accessories and artwork. We supply and fit blinds for offices, and curtains and blinds for residential communal areas. Every space is designed to balance style with practicality, so it works well every day and leaves a lasting impression on residents, clients and visitors.',
+      'Whether you’re launching a new development, refreshing an office or preparing a marketing suite, we’ll bring your vision to life. For developers, we create marketing suites and show spaces that present your properties at their very best and help them sell.',
     ],
-    image: commonPartsImage,
+    image: commercialImage,
     imageAlt: 'Black and white photo of a furnished office reception with a polished floor',
   },
 ];

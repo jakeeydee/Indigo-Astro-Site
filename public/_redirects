@@ -3,4 +3,8 @@
 /blank-5            /contact/                                 301
 /blank-6            /services/curtains-and-blinds/            301
 /blank-6-1          /services/home-staging-furniture-packs/   301
-/blank-6-1-1        /services/common-parts/                   301
+/blank-6-1-1        /services/commercial/                     301
+
+# Common Parts was renamed Commercial (October 2026)
+/services/common-parts       /services/commercial/   301
+/services/common-parts/      /services/commercial/   301
