@@ -15,6 +15,9 @@ interface Props {
 
 const { images, label } = Astro.props;
 
+/** Photos shown before "Show more photos"; the rest are revealed in batches of the same size. */
+const PAGE = 24;
+
 const photos = await Promise.all(
   images.map(async (src, i) => {
     const full = await getImage({ src, widths: [800, 1200, 1600], format: 'webp' });
@@ -32,7 +35,7 @@ const photos = await Promise.all(
   <ul role="list" class="gallery">
     {
       photos.map((p, i) => (
-        <li class="shot">
+        <li class:list={['shot', { 'is-extra': i >= PAGE }]}>
           <a
             href={p.fullSrc}
             data-index={i}
@@ -52,6 +55,18 @@ const photos = await Promise.all(
       ))
     }
   </ul>
+
+  {
+    photos.length > PAGE && (
+      <div class="more">
+        <button class="btn btn--teal" type="button" data-more data-page={PAGE}>
+          Show more photos <span class="more__count" data-more-count>({photos.length - PAGE} more)</span>
+        </button>
+      </div>
+    )
+  }
+  <!-- Without JavaScript, show every photo -->
+  <noscript><style>.shot.is-extra { display: block !important; } .more { display: none; }</style></noscript>
 
   <dialog class="viewer" aria-label={`${label} gallery`} data-viewer>
     <div class="viewer__top">
@@ -77,6 +92,22 @@ const photos = await Promise.all(
 <script>
   document.querySelectorAll<HTMLElement>('[data-gallery]').forEach((root) => {
     const links = [...root.querySelectorAll<HTMLAnchorElement>('a[data-index]')];
+
+    // "Show more photos": reveal the next batch; hidden photos aren't downloaded until shown
+    const more = root.querySelector<HTMLButtonElement>('[data-more]');
+    if (more) {
+      const page = Number(more.dataset.page);
+      const count = root.querySelector<HTMLElement>('[data-more-count]')!;
+      more.addEventListener('click', () => {
+        const hidden = [...root.querySelectorAll<HTMLElement>('.shot.is-extra')];
+        const batch = hidden.slice(0, page);
+        batch.forEach((li) => li.classList.remove('is-extra'));
+        const left = hidden.length - batch.length;
+        if (left > 0) count.textContent = `(${left} more)`;
+        else more.closest('.more')?.remove();
+        batch[0]?.querySelector('a')?.focus({ preventScroll: true }); // keyboard users continue from the new photos
+      });
+    }
     const dialog = root.querySelector<HTMLDialogElement>('[data-viewer]')!;
     const img = dialog.querySelector<HTMLImageElement>('[data-img]')!;
     const stage = dialog.querySelector<HTMLElement>('[data-stage]')!;
@@ -166,6 +197,21 @@ const photos = await Promise.all(
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
     gap: 16px;
+  }
+
+  .shot.is-extra {
+    display: none;
+  }
+
+  .more {
+    display: flex;
+    justify-content: center;
+    margin-top: 28px;
+  }
+
+  .more__count {
+    opacity: 0.8;
+    font-weight: var(--weight-medium);
   }
 
   .shot {
