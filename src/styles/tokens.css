@@ -50,7 +50,7 @@
   --container-max: 82.5rem; /* 1320px */
   --page-pad: clamp(16px, 4vw, 48px);
   --section-gap: clamp(72px, 10vw, 140px);
-  --header-offset: 96px; /* space reserved under the fixed header on non-hero pages */
+  --header-offset: 110px; /* space reserved under the fixed header on non-hero pages (phones) */
 
   /* Shape */
   --radius-pill: 999px;
@@ -71,4 +71,10 @@
   --shadow-menu: 0 20px 50px rgb(3 74 68 / 0.14);
   --shadow-dropdown: 0 1px 0 rgb(20 32 30 / 0.04), 0 30px 70px -10px rgb(3 74 68 / 0.22);
   --shadow-card-hover: 0 30px 60px rgb(3 74 68 / 0.12);
+}
+
+@media (min-width: 480px) {
+  :root {
+    --header-offset: 124px; /* taller bar with the full-size logo */
+  }
 }

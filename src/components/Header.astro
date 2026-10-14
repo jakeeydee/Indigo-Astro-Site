@@ -1,6 +1,6 @@
 ---
 import { Image } from 'astro:assets';
-import wordmark from '../assets/brand/logo-wordmark-teal.png';
+import logo from '../assets/brand/logo-horizontal-teal.png'; // horizontal teal lockup: house + wordmark
 import { routes, services, serviceHref, site } from '../data/site';
 
 const path = Astro.url.pathname;
@@ -86,11 +86,17 @@ const mobilePrimary = [
     </button>
 
     <a class="logo" href={routes.home} aria-label="Indigo Interiors, home">
-      <Image src={wordmark} alt="" widths={[160, 320, 480]} sizes="(max-width: 479px) 120px, 153px" loading="eager" />
+      <Image src={logo} alt="" widths={[200, 400, 504]} sizes="(max-width: 479px) 190px, 215px" loading="eager" />
     </a>
 
     <div class="bar__end">
-      <a class="cta" href={routes.contact}>Get in touch</a>
+      <a class="cta" href={routes.contact}>
+        <svg class="cta__icon" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="3" y="5" width="18" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.7"></rect>
+          <path d="m4 7 8 6 8-6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"></path>
+        </svg>
+        <span class="cta__label">Get in touch</span>
+      </a>
     </div>
   </div>
 
@@ -204,7 +210,7 @@ const mobilePrimary = [
     if ((e.target as Element).closest('a')) setMenu(false);
   });
   window.addEventListener('pageshow', () => setMenu(false));
-  window.matchMedia('(min-width: 900px)').addEventListener('change', (e) => {
+  window.matchMedia('(min-width: 1024px)').addEventListener('change', (e) => {
     if (e.matches) setMenu(false);
   });
 
@@ -243,7 +249,8 @@ const mobilePrimary = [
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
     gap: 16px;
-    padding: 10px 12px;
+    --bar-pad: 14px; /* vertical padding; the Services dropdown offsets are derived from it */
+    padding: var(--bar-pad) 16px;
     border-radius: var(--radius-pill);
     background: rgb(245 243 238 / 0.82);
     -webkit-backdrop-filter: blur(14px);
@@ -263,7 +270,7 @@ const mobilePrimary = [
   }
 
   .logo img {
-    width: 153px; /* same footprint as the previous text logo: 153 x 55 */
+    width: 215px; /* 215 x 64 */
     height: auto;
   }
 
@@ -275,11 +282,15 @@ const mobilePrimary = [
   }
 
   .cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 50px;
     background: var(--color-teal);
     color: var(--color-white);
-    padding: 12px 22px;
+    padding: 13px 26px;
     border-radius: var(--radius-pill);
-    font-size: 15px;
+    font-size: 17px;
     font-weight: var(--weight-semibold);
     white-space: nowrap;
     transition: background-color var(--dur-base);
@@ -288,6 +299,10 @@ const mobilePrimary = [
   .cta:hover {
     background: var(--color-teal-deep);
     color: var(--color-white);
+  }
+
+  .cta__icon {
+    display: none;
   }
 
   /* Narrow: hamburger on the left */
@@ -299,8 +314,8 @@ const mobilePrimary = [
     grid-column: 1;
     grid-row: 1;
     justify-self: start;
-    width: 44px;
-    height: 44px;
+    width: 48px;
+    height: 48px;
     border-radius: var(--radius-pill);
     border: 1px solid rgb(20 32 30 / 0.15);
     background: transparent;
@@ -584,7 +599,8 @@ const mobilePrimary = [
   }
 
   /* Wide: inline nav */
-  @media (min-width: 900px) {
+  /* Full nav from 1024px (iPad landscape and up); below that it would crowd the logo */
+  @media (min-width: 1024px) {
     .menu-toggle,
     .mobile-menu,
     .menu-backdrop {
@@ -613,13 +629,13 @@ const mobilePrimary = [
   .nav__item {
     display: inline-flex;
     align-items: center;
-    min-height: 44px;
-    padding: 10px 16px;
+    min-height: 48px;
+    padding: 12px 20px;
     border: 0;
     border-radius: var(--radius-pill);
     background: transparent;
     color: var(--color-ink);
-    font-size: 15px;
+    font-size: 17px;
     font-weight: var(--weight-medium);
     line-height: 1.5;
     transition:
@@ -667,11 +683,11 @@ const mobilePrimary = [
   /* Below 1100px the panel spans the whole header bar; above it, it anchors to the trigger. */
   .dd__panel {
     position: absolute;
-    top: calc(100% - 10px); /* start inside the bar's padding so the hover area meets the Services item */
+    top: calc(100% - var(--bar-pad)); /* start inside the bar's padding so the hover area meets the Services item */
     left: 0;
     right: 0;
     /* Gap below the bar; the padding doubles as a hover bridge so the menu doesn't close on the way down */
-    padding-top: 23px; /* 12px gap below the bar + its 10px padding and 1px border */
+    padding-top: calc(12px + var(--bar-pad) + 1px); /* 12px gap below the bar + its padding and 1px border */
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -828,40 +844,43 @@ const mobilePrimary = [
 
   /* ---- Small-screen overrides: kept last so they always beat the base rules above ---- */
 
-  /* Small phones: equal side columns are too narrow for the CTA, so let them size to content */
+  /*
+    Phones and small tablets (under 640px): the full "Get in touch" button becomes a round mail icon
+    that mirrors the menu button, leaving the middle of the bar for the logo.
+  */
+  @media (max-width: 639px) {
+    .cta {
+      width: 48px;
+      height: 48px;
+      min-height: 0;
+      padding: 0;
+    }
+
+    .cta__icon {
+      display: block;
+    }
+
+    .cta__label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+    }
+  }
+
+  /* Phones: slightly slimmer bar; logo as big as the space between the two round buttons allows */
   @media (max-width: 479px) {
     .bar {
+      --bar-pad: 12px;
       grid-template-columns: auto minmax(0, 1fr) auto;
       gap: 8px;
+      padding-inline: 12px;
     }
 
-    .cta {
-      display: inline-flex;
-      align-items: center;
-      min-height: 44px;
-      padding: 11px 16px;
-      font-size: 14px;
-    }
-  }
-
-  /* Small phones: the logo shares the bar with the menu button and "Get in touch" */
-  @media (max-width: 479px) {
     .logo img {
-      width: 120px;
-    }
-  }
-
-  /*
-    The smallest phones (under 360px) don't have room for all three, so the CTA steps aside
-    (Contact Us, phone and email are all in the menu) and the logo is centred again.
-  */
-  @media (max-width: 359px) {
-    .bar {
-      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-    }
-
-    .bar__end {
-      display: none;
+      width: min(190px, 100vw - 178px);
     }
   }
 </style>
