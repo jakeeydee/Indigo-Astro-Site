@@ -90,7 +90,7 @@ export const services: Service[] = [
       'Whether you’re launching a new development, refreshing an office or preparing a marketing suite, we’ll bring your vision to life. For developers, we create marketing suites and show spaces that present your properties at their very best and help them sell.',
     ],
     image: commercialImage,
-    imageAlt: 'Black and white photo of a furnished office reception with a polished floor',
+    imageAlt: 'Office reception with navy sofas, grey armchairs and a meeting table on a polished black floor',
   },
 ];
 
