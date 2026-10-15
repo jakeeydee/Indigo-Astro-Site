@@ -48,7 +48,7 @@ const photos = await Promise.all(
               src={p.src}
               alt={p.alt}
               widths={[320, 480, 640, 900]}
-              sizes="(min-width: 1400px) 320px, (min-width: 1240px) 25vw, (min-width: 920px) 33vw, (min-width: 600px) 50vw, 100vw"
+              sizes="(min-width: 1400px) 320px, (min-width: 1240px) 25vw, (min-width: 920px) 33vw, 50vw"
             />
           </a>
         </li>
@@ -395,6 +395,18 @@ const photos = await Promise.all(
 
     .viewer[open] .viewer__stage {
       transform: scale(0.96);
+    }
+  }
+
+  /* Phones: two photos per row so the gallery is quick to browse */
+  @media (max-width: 599px) {
+    .gallery {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .shot {
+      border-radius: 14px;
     }
   }
 </style>
