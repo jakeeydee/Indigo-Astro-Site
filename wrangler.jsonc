@@ -1,0 +1,11 @@
+{
+  // Cloudflare Worker serving the static Astro build.
+  // The name must match the existing Worker so deploys update it rather than creating a new one.
+  "name": "indigo-astro-site",
+  "compatibility_date": "2025-09-01",
+  "assets": {
+    "directory": "./dist",
+    // Serve dist/404.html (with a 404 status) for unknown paths instead of an empty response
+    "not_found_handling": "404-page"
+  }
+}

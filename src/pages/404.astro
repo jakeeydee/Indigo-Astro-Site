@@ -1,0 +1,99 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { routes, services, serviceHref } from '../data/site';
+---
+
+<BaseLayout title="Page not found" description="Sorry, we couldn't find that page.">
+  <section class="nf">
+    <div class="container">
+      <p class="eyebrow">404</p>
+      <h1>Sorry, we couldn't find that page</h1>
+      <p class="lede">It may have moved when we updated our website. These might help:</p>
+      <div class="actions">
+        <a class="btn btn--teal" href={routes.home}>Go to the homepage</a>
+        <a class="btn btn--outline" href={routes.contact}>Contact us</a>
+      </div>
+      <ul role="list" class="links">
+        {
+          services.map((s) => (
+            <li>
+              <a href={serviceHref(s.slug)}>
+                <span class="num">{s.num}</span> {s.title} <span aria-hidden="true">→</span>
+              </a>
+            </li>
+          ))
+        }
+        <li><a href={routes.about}><span class="num">·</span> About Us <span aria-hidden="true">→</span></a></li>
+      </ul>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .nf {
+    padding: clamp(32px, 6vw, 80px) var(--page-pad) 0;
+  }
+
+  h1 {
+    margin: 12px 0 16px;
+    font-size: var(--text-h1);
+    line-height: 1;
+    letter-spacing: var(--tracking-display);
+    max-width: 16ch;
+  }
+
+  .lede {
+    font-size: var(--text-lede);
+    color: var(--color-ink-soft);
+    max-width: 40ch;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 28px 0 40px;
+  }
+
+  .btn--outline {
+    border-color: var(--line-strong);
+    color: var(--color-ink);
+  }
+
+  .btn--outline:hover {
+    border-color: var(--color-ink);
+    color: var(--color-ink);
+  }
+
+  .links {
+    max-width: 560px;
+    border-top: 1px solid var(--line);
+  }
+
+  .links a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 56px;
+    border-bottom: 1px solid var(--line);
+    font-size: var(--text-body);
+    font-weight: var(--weight-medium);
+    color: var(--color-ink);
+  }
+
+  .links a:hover {
+    color: var(--color-teal);
+  }
+
+  .links span[aria-hidden] {
+    margin-left: auto;
+    color: var(--color-teal);
+  }
+
+  .num {
+    width: 24px;
+    font-size: 13px;
+    font-weight: var(--weight-bold);
+    color: var(--color-teal);
+  }
+</style>
